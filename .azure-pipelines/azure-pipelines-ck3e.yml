@@ -6,8 +6,6 @@ jobs:
   displayName: 'Arch (armhf-ubuntu)'
   pool:
     vmImage: 'linaro/base-armhf-ubuntu'
-  variables:
-    # IDF_PATH: $(Build.BinariesDirectory)/esp-idf
   steps:
   - checkout: self
     submodules: recursive
