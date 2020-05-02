@@ -6,8 +6,6 @@ BASE_DIR="$( realpath "$DIR/../../../" )"
 
 echo "== armhf-ubuntu Build =="
 
-mkdir -p build && cd build
-
 CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug \
     -DUA_ENABLE_AMALGAMATION=OFF \
     -DUA_BUILD_EXAMPLES=OFF"

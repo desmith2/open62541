@@ -23,4 +23,3 @@ jobs:
       filePath: ./tools/azure-devops/ck3e/build.sh
       failOnStderr: false
     displayName: Building & Testing
-

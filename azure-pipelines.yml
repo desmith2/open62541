@@ -9,4 +9,3 @@ trigger:
 
 jobs:
     - template: ./.azure-pipelines/azure-pipelines-ck3e.yml
-    - template: ./.azure-pipelines/azure-pipelines-debian.yml
