@@ -5,7 +5,7 @@ jobs:
 - job: 'CK3E'
   displayName: 'Arch (armhf-ubuntu)'
   pool:
-    vmImage: 'linaro/base-armhf-ubuntu'
+    vmImage: 'ubuntu-18.04'
   steps:
   - checkout: self
     submodules: recursive
