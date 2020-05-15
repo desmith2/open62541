@@ -1,0 +1,27 @@
+pipeline {
+  //agent none
+  //agent { dockerfile { filename './docker/Dockerfile.armhf' } }
+  // `--entrypoint=''`
+  agent { docker { image 'desmith2/open62541:armhf' } }
+  stages {
+    stage("Build") {
+      steps {
+        sh(returnStdout: false, script: "cmake -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DUA_BUILD_EXAMPLES=ON \
+            -DUA_ENABLE_HARDENING=OFF \
+            -DUA_ENABLE_ENCRYPTION=ON \
+            -DUA_ENABLE_ENCRYPTION_OPENSSL=ON \
+            -DUA_ENABLE_SUBSCRIPTIONS=ON \
+            -DUA_ENABLE_SUBSCRIPTIONS_EVENTS=ON \
+            -DUA_NAMESPACE_ZERO=FULL \
+            -DOPENSSL_SSL_LIBRARIES=/usr/lib/arm-linux-gnueabihf \
+            -DOPENSSL_INCLUDE_DIR=/usr/include/openssl \
+            /opt/open62541")
+        sh(returnStdout: false, script: "make -j")
+        sh(returnStdout: false, script: "make install")
+        sh(returnStdout: false, script: "make package")
+      }
+    }
+  }
+}

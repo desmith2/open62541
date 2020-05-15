@@ -2,6 +2,7 @@ MAINTAINER Dennis Smith "desmith2@ix.netcom.com"
 
 FROM multiarch/ubuntu-core:armhf-xenial
 
+<<<<<<< Updated upstream
 RUN apt-get update \
   && apt-get -y install cmake make pkg-config python3 py3-pip python-dev g++ git openssl linux-headers-generic \
   && rm -rf /var/lib/lists/*
@@ -15,6 +16,29 @@ RUN git fetch -f --tags github-upstream
 # Ignore error here. This always fails on Docker Cloud. It's fine there because the submodule is alread initialized. See also:
 # https://stackoverflow.com/questions/58690455/how-to-correctly-initialize-git-submodules-in-dockerfile-for-docker-cloud
 RUN git submodule update --init --recursive || true
+=======
+RUN apt update \
+  && apt -y install cmake make pkg-config python3 python3-pip python3-dev g++ git openssl libssl-dev linux-headers-generic \
+     check debhelper nano htop fakeroot graphviz latexmk libsubunit-dev python3-sphinx tar rpm net-tools \
+     texlive-fonts-recommended texlive-generic-extra texlive-latex-extra wget \
+  && rm -rf /var/lib/lists/*
+
+#RUN wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add - \
+#  && sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' \
+#  && apt update
+
+# ADD . /opt/open62541
+
+# WORKDIR /opt/open62541/build
+
+COPY docker-entrypoint.sh /bin/docker-entrypoint.sh
+RUN chmod +x /bin/docker-entrypoint.sh
+ENTRYPOINT ["/bin/docker-entrypoint.sh"]
+
+# Run this container like this:
+# docker run --rm -it -v ~/.ssh:/tmp/.ssh:ro your_image.
+
+>>>>>>> Stashed changes
 
 WORKDIR /opt/open62541/build
 RUN cmake -DBUILD_SHARED_LIBS=ON \

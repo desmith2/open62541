@@ -1,0 +1,61 @@
+
+# Requires binfm_misc registration
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
+# docker run --rm --privileged multiarch/qemu-user-static:register
+
+FROM multiarch/ubuntu-core:armhf-xenial
+
+RUN apt update \
+  && apt -y install cmake make pkg-config python3 python3-pip python3-dev g++ git openssl libssl-dev linux-headers-generic \
+     check debhelper nano htop fakeroot graphviz latexmk libsubunit-dev python3-sphinx tar rpm net-tools \
+     texlive-fonts-recommended texlive-generic-extra texlive-latex-extra wget \
+  && rm -rf /var/lib/lists/*
+
+ADD . /opt/open62541
+
+# Get all the git tags to make sure we detect the correct version with git describe
+WORKDIR /opt/open62541
+
+#RUN git remote add github-upstream https://github.com/desmith2/open62541.git
+#RUN git fetch -f --tags github-upstream
+# Ignore error here. This always fails on Docker Cloud. It's fine there because the submodule is alread initialized. See also:
+# https://stackoverflow.com/questions/58690455/how-to-correctly-initialize-git-submodules-in-dockerfile-for-docker-cloud
+#RUN git submodule update --init --recursive || true
+
+WORKDIR /opt/open62541/build
+RUN cmake -DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_BUILD_TYPE=Debug \
+    -DUA_ARCHITECTURE=posix \
+		-DUA_BUILD_EXAMPLES=ON \
+		# Hardening needs to be disabled, otherwise the docker build takes too long and travis fails
+		-DUA_ENABLE_HARDENING=OFF \
+    -DUA_ENABLE_ENCRYPTION=ON \
+    -DUA_ENABLE_ENCRYPTION_OPENSSL=ON \
+    -DUA_ENABLE_SUBSCRIPTIONS=ON \
+    -DUA_ENABLE_SUBSCRIPTIONS_EVENTS=ON \
+		-DUA_NAMESPACE_ZERO=FULL \
+    -DOPENSSL_SSL_LIBRARIES=/usr/lib/arm-linux-gnueabihf \
+    -DOPENSSL_INCLUDE_DIR=/usr/include/openssl \
+    /opt/open62541
+
+RUN make -j
+RUN make install
+RUN make package
+WORKDIR /opt/open62541
+
+# Generate certificates
+RUN pip3 install netifaces==0.10.9
+RUN mkdir -p /opt/open62541/pki/created
+RUN python3 /opt/open62541/tools/certs/create_self-signed.py /opt/open62541/pki/created
+
+
+EXPOSE 4840
+# CMD ["/opt/open62541/build/bin/examples/server_ctt" , "/opt/open62541/pki/created/server_cert.der", "/opt/open62541/pki/created/server_key.der", "--enableUnencrypted", "--enableAnonymous"]
+
+COPY docker-entrypoint.sh /bin/docker-entrypoint.sh
+RUN chmod +x /bin/docker-entrypoint.sh
+ENTRYPOINT ["/bin/docker-entrypoint.sh"]
+
+# Run this container like this:
+# docker run --rm -it -v ~/.ssh:/tmp/.ssh:ro your_image.
+
